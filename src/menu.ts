@@ -2,15 +2,20 @@ import type { AppConfig, City } from "./types"
 import { loadConfig, saveConfig } from "./db"
 import { searchCity, getWeather } from "./api"
 import { formatWeather, clearScreen, readLine } from "./utils"
+import { cyan, green, red } from "./colors"
 
-const HEADER = `
+const HEADER = cyan(`
 ════════════════════════════════════════
          WEATHER CLI
-════════════════════════════════════════`
-
-function renderMenu(config: AppConfig): string {
+════════════════════════════════════════`)
+const HEADER_LOW = cyan(`
+════════════════════════════════════════
+  Selecciona una opción: 
+`)
+function renderMenuOptions(config: AppConfig): string{
   const unitSymbol = config.units === "celsius" ? "°C" : "°F"
-  return `
+
+  return green(`
   1. Clima de ciudad default
   2. Clima de todas las ciudades (${config.cities.length})
   3. Buscar y agregar ciudad
@@ -18,8 +23,13 @@ function renderMenu(config: AppConfig): string {
   5. Establecer ciudad default
   8. Ajustes (${unitSymbol})
   9. Salir
-════════════════════════════════════════
-  Selecciona una opción: `
+`)
+}
+
+function renderMenu(config: AppConfig): string {
+  return `
+  ${renderMenuOptions(config)}
+${HEADER_LOW}`
 }
 
 async function pressEnter(): Promise<void> {
