@@ -1,0 +1,71 @@
+import type { AppConfig } from "./types"
+import { getWeatherDescription } from "./weatherCodes"
+
+const decoder = new TextDecoder()
+let buffer = ""
+let reader: ReadableStreamDefaultReader<string> | null = null
+
+async function nextLine(): Promise<string> {
+  if (!reader) {
+    reader = Bun.stdin.stream().getReader()
+  }
+
+  while (true) {
+    const nlIndex = buffer.indexOf("\n")
+    if (nlIndex !== -1) {
+      const line = buffer.slice(0, nlIndex)
+      buffer = buffer.slice(nlIndex + 1)
+      return line
+    }
+    const result = await reader.read()
+    if (result.done) {
+      const remaining = buffer
+      buffer = ""
+      return remaining
+    }
+    buffer += decoder.decode(result.value)
+  }
+}
+
+export async function readLine(prompt: string): Promise<string> {
+  console.log(prompt)
+  return await nextLine()
+}
+
+export function formatTemperature(temp: number, config: AppConfig): string {
+  if (config.units === "fahrenheit") {
+    const f = (temp * 9) / 5 + 32
+    return `${f.toFixed(1)}°F`
+  }
+  return `${temp.toFixed(1)}°C`
+}
+
+export function formatWindSpeed(kmh: number): string {
+  return `${kmh.toFixed(1)} km/h`
+}
+
+export function formatWeather(code: number, temp: number, wind: number, config: AppConfig): string {
+  const desc = getWeatherDescription(code)
+  const tempStr = formatTemperature(temp, config)
+  const windStr = formatWindSpeed(wind)
+  const emoji = weatherEmoji(code)
+  return `${emoji}  ${desc} | ${tempStr} | Viento: ${windStr}`
+}
+
+export function weatherEmoji(code: number): string {
+  if (code === 0) return "☀️"
+  if (code <= 2) return "⛅"
+  if (code === 3) return "☁️"
+  if (code >= 45 && code <= 48) return "🌫️"
+  if (code >= 51 && code <= 57) return "🌦️"
+  if (code >= 61 && code <= 67) return "🌧️"
+  if (code >= 71 && code <= 77) return "❄️"
+  if (code >= 80 && code <= 82) return "🌦️"
+  if (code >= 85 && code <= 86) return "❄️"
+  if (code >= 95) return "⛈️"
+  return "❓"
+}
+
+export function clearScreen(): void {
+  console.clear()
+}

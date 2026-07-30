@@ -5,6 +5,11 @@ node_modules
 out
 dist
 *.tgz
+weather-cli
+weather-cli.exe
+
+# runtime data
+cities.json
 
 # code coverage
 coverage
