@@ -1,36 +1,6 @@
-import type { AppConfig, DailyForecast } from "./types"
+import type { AppConfig, DailyForecast } from "../types"
 import { getWeatherDescription } from "./weatherCodes"
-
-const decoder = new TextDecoder()
-let buffer = ""
-let reader: ReadableStreamDefaultReader<string> | null = null
-
-async function nextLine(): Promise<string> {
-  if (!reader) {
-    reader = Bun.stdin.stream().getReader()
-  }
-
-  while (true) {
-    const nlIndex = buffer.indexOf("\n")
-    if (nlIndex !== -1) {
-      const line = buffer.slice(0, nlIndex)
-      buffer = buffer.slice(nlIndex + 1)
-      return line
-    }
-    const result = await reader.read()
-    if (result.done) {
-      const remaining = buffer
-      buffer = ""
-      return remaining
-    }
-    buffer += decoder.decode(result.value)
-  }
-}
-
-export async function readLine(prompt: string): Promise<string> {
-  console.log(prompt)
-  return await nextLine()
-}
+import { dayNames } from "./constants"
 
 export function formatTemperature(temp: number, config: AppConfig): string {
   if (config.units === "fahrenheit") {
@@ -65,12 +35,6 @@ export function weatherEmoji(code: number): string {
   if (code >= 95) return "⛈️"
   return "❓"
 }
-
-export function clearScreen(): void {
-  console.clear()
-}
-
-const dayNames = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"]
 
 function formatDateShort(dateStr: string): string {
   const d = new Date(dateStr + "T12:00:00")

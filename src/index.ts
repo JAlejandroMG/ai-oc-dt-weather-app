@@ -1,4 +1,4 @@
-import { mainLoop } from "./src/menu"
+import { mainLoop } from "./presentation/menu"
 
 process.on("SIGINT", () => {
   console.log("\n👋  ¡Hasta luego!")
