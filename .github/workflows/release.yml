@@ -49,11 +49,11 @@ jobs:
 
       - name: Cross-compile Windows
         if: steps.check_tag.outputs.exists == 'false'
-        run: bun build --compile --target=bun-windows-x64 src/index.ts --outfile weather-cli-windows-amd64.exe
+        run: bun build --compile --target=bun-windows-x64 src/index.ts --outfile weather-cli-windows-x64.exe
 
       - name: Rename Linux binary
         if: steps.check_tag.outputs.exists == 'false'
-        run: mv weather-cli weather-cli-linux-amd64
+        run: mv weather-cli weather-cli-linux-x64
 
       - name: Create GitHub Release
         if: steps.check_tag.outputs.exists == 'false'
@@ -63,7 +63,7 @@ jobs:
           name: v${{ steps.version.outputs.version }}
           generate_release_notes: true
           files: |
-            weather-cli-linux-amd64
+            weather-cli-linux-x64
             weather-cli-darwin-arm64
             weather-cli-darwin-amd64
-            weather-cli-windows-amd64.exe
+            weather-cli-windows-x64.exe
