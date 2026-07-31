@@ -1,7 +1,7 @@
 import type { AppConfig, City } from "./types"
 import { loadConfig, saveConfig } from "./db"
-import { searchCity, getWeather } from "./api"
-import { formatWeather, clearScreen, readLine } from "./utils"
+import { searchCity, getWeather, getDailyForecast } from "./api"
+import { formatWeather, formatDailyForecast, clearScreen, readLine } from "./utils"
 import { cyan, green, red } from "./colors"
 
 const HEADER = cyan(`
@@ -21,6 +21,7 @@ function renderMenuOptions(config: AppConfig): string{
   3. Buscar y agregar ciudad
   4. Eliminar ciudad
   5. Establecer ciudad default
+  6. Pronóstico 7 días
   8. Ajustes (${unitSymbol})
   9. Salir
 `)
@@ -147,6 +148,26 @@ async function optionSetDefault(config: AppConfig): Promise<void> {
   await pressEnter()
 }
 
+async function optionDailyForecast(config: AppConfig): Promise<void> {
+  const defaultCity = config.cities.find((c) => c.isDefault)
+  if (!defaultCity) {
+    console.log("\n⚠️  No hay ciudad default configurada.")
+    await pressEnter()
+    return
+  }
+  const days = await getDailyForecast(defaultCity.latitude, defaultCity.longitude)
+  if (!days) {
+    console.log(`\n❌  Error al obtener pronóstico para ${defaultCity.name}`)
+    await pressEnter()
+    return
+  }
+  const label = defaultCity.isDefault ? " (Default)" : ""
+  console.log(`\n📍 ${defaultCity.name}${label}${defaultCity.country ? `, ${defaultCity.country}` : ""}`)
+  console.log(`📅 Pronóstico 7 días\n`)
+  console.log(formatDailyForecast(days, config))
+  await pressEnter()
+}
+
 async function optionToggleUnits(config: AppConfig): Promise<void> {
   config.units = config.units === "celsius" ? "fahrenheit" : "celsius"
   await saveConfig(config)
@@ -177,6 +198,9 @@ export async function mainLoop(): Promise<void> {
         break
       case "5":
         await optionSetDefault(config)
+        break
+      case "6":
+        await optionDailyForecast(config)
         break
       case "8":
         await optionToggleUnits(config)

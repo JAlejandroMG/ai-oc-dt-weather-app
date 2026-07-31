@@ -24,3 +24,12 @@ export interface WeatherData {
   windspeed: number
   weathercode: number
 }
+
+export interface DailyForecast {
+  date: string
+  weathercode: number
+  tempMax: number
+  tempMin: number
+  precipitationSum: number
+  windSpeedMax: number
+}

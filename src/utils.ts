@@ -1,4 +1,4 @@
-import type { AppConfig } from "./types"
+import type { AppConfig, DailyForecast } from "./types"
 import { getWeatherDescription } from "./weatherCodes"
 
 const decoder = new TextDecoder()
@@ -68,4 +68,29 @@ export function weatherEmoji(code: number): string {
 
 export function clearScreen(): void {
   console.clear()
+}
+
+const dayNames = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"]
+
+function formatDateShort(dateStr: string): string {
+  const d = new Date(dateStr + "T12:00:00")
+  return `${dayNames[d.getDay()]} ${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1).toString().padStart(2, "0")}`
+}
+
+function formatDailyForecastLine(day: DailyForecast, config: AppConfig): string {
+  const dateStr = formatDateShort(day.date)
+  const desc = getWeatherDescription(day.weathercode)
+  const emoji = weatherEmoji(day.weathercode)
+  const minStr = formatTemperature(day.tempMin, config)
+  const maxStr = formatTemperature(day.tempMax, config)
+
+  const tempPart = `${minStr}/${maxStr}`
+  const precip = `${day.precipitationSum.toFixed(1)} mm`
+  const wind = formatWindSpeed(day.windSpeedMax)
+
+  return `${dateStr}  ${emoji}  ${desc.padEnd(22)}${tempPart}  💧 ${precip.padStart(7)}  💨 ${wind}`
+}
+
+export function formatDailyForecast(days: DailyForecast[], config: AppConfig): string {
+  return days.map(d => `  ${formatDailyForecastLine(d, config)}`).join("\n")
 }

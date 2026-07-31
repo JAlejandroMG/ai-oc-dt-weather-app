@@ -1,4 +1,4 @@
-import type { GeocodingResult, WeatherData } from "./types"
+import type { GeocodingResult, WeatherData, DailyForecast } from "./types"
 
 const GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search"
 const FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
@@ -31,4 +31,21 @@ export async function getWeather(latitude: number, longitude: number): Promise<W
     windspeed: current.windspeed_10m,
     weathercode: current.weathercode,
   }
+}
+
+export async function getDailyForecast(latitude: number, longitude: number): Promise<DailyForecast[] | null> {
+  const url = `${FORECAST_URL}?latitude=${latitude}&longitude=${longitude}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max&timezone=auto&forecast_days=7`
+  const res = await fetch(url)
+  if (!res.ok) return null
+  const data = await res.json()
+  const daily = data.daily
+  if (!daily || !daily.time) return null
+  return daily.time.map((date: string, i: number) => ({
+    date,
+    weathercode: daily.weather_code[i],
+    tempMax: daily.temperature_2m_max[i],
+    tempMin: daily.temperature_2m_min[i],
+    precipitationSum: daily.precipitation_sum[i],
+    windSpeedMax: daily.wind_speed_10m_max[i],
+  }))
 }
